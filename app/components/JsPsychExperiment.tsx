@@ -1297,9 +1297,9 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
         `,
         labels: ["0", "1"],
         min: 0,
-        max: 1,
-        step: 0.01,
-        start: 0.5,
+        max: 100,
+        step: 1,
+        start: 50,
         require_movement: true,
         button_label: "Continue",
         on_load: () => {
@@ -1344,7 +1344,7 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
             .values()?.[0];
           const placed =
             typeof last?.response === "number"
-              ? Number(last.response).toFixed(2)
+              ? (Number(last.response) / 100).toFixed(2)
               : "N/A";
           return `
             <div style="max-width: 920px; margin: 0 auto; padding: 30px; text-align:center;">
@@ -1381,9 +1381,9 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
         `,
         labels: ["0%", "100%"],
         min: 0,
-        max: 1,
-        step: 0.01,
-        start: 0.25,
+        max: 100,
+        step: 1,
+        start: 25,
         require_movement: true,
         button_label: "Continue",
         on_load: () => {
@@ -1394,7 +1394,7 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
           if (slider && valueEl) {
             const update = () => {
               const v = Number(slider.value);
-              valueEl.textContent = `${Math.round(v * 100)}%`;
+              valueEl.textContent = `${Math.round(v)}%`;
               if (monsterEl) {
                 positionMonster(slider, monsterEl);
                 if (monsterEl.naturalWidth > 0) {
@@ -1445,9 +1445,9 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
         `,
         labels: ["0", "1"],
         min: 0,
-        max: 1,
-        step: 0.01,
-        start: 0.75,
+        max: 100,
+        step: 1,
+        start: 75,
         require_movement: true,
         button_label: "Continue",
         on_load: () => {
@@ -1458,7 +1458,7 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
           if (slider && valueEl) {
             const update = () => {
               const v = Number(slider.value);
-              valueEl.textContent = v.toFixed(2);
+              valueEl.textContent = (v / 100).toFixed(2);
               if (monsterEl) {
                 positionMonster(slider, monsterEl);
                 if (monsterEl.naturalWidth > 0) {
