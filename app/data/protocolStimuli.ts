@@ -6,7 +6,7 @@
 // - Within-notation comparisons (3 per base) derived from the same values
 // - Estimation trials (both values x 3 notations per base)
 
-export type BlockTag = 'Pre-Instruction' | 'Post-Instruction';
+export type BlockTag = 'Pre-Instruction' | 'Post-Instruction' | 'Custom';
 export type DistanceTag = 'Small' | 'Large' | 'Medium' | string;
 export type Side = 'left' | 'right';
 export type Notation = 'F' | 'D' | 'P';
@@ -33,7 +33,11 @@ export type ComparisonTrial = {
   leftVal: number;
   rightVal: number;
   correctSide: Side;
-  meta?: { wnbConsistent?: boolean; decimalDigits?: number | null; source?: 'csv-cross' | 'derived-within' };
+  meta?: {
+    wnbConsistent?: boolean;
+    decimalDigits?: number | null;
+    source?: 'csv-cross' | 'derived-within' | 'custom';
+  };
 };
 
 export type EstimationTrial = {
