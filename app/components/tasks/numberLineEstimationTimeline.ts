@@ -124,7 +124,7 @@ export function buildNumberLineEstimationTimeline(options: BuildOptions) {
           </p>
         </div>
       `,
-      labels: ["0", "0.5", "1"],
+      labels: ["0", "1"],
       min: 0,
       max: 100,
       start: 50,

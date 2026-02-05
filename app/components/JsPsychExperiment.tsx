@@ -206,6 +206,30 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
   });
 };
 
+    const saveStopCheckpoint = () => {
+  const pid = ((window as any).__participantId ?? "").toString().trim();
+  if (!pid) return;
+
+  const existing = getSession(pid);
+
+  upsertSession(pid, {
+    stage: "MONSTER_DONE",
+    payload: {
+      ...(existing?.payload ?? {}),
+      monster_stop_shown: true,
+      monster_stop_at: new Date().toISOString(),
+    },
+  });
+};
+
+    const getSavedStage = () => {
+  const row = (window as any).__sessionRow;
+  if (row?.stage) return row.stage as string;
+  const pid = ((window as any).__participantId ?? "").toString().trim();
+  const s = pid ? getSession(pid) : null;
+  return s?.stage ?? null;
+};
+
     const positionMonster = (
       slider: HTMLInputElement,
       img: HTMLImageElement
@@ -228,6 +252,48 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
       const val = Number(slider.value);
       const ratio = max === min ? 0 : (val - min) / (max - min);
       const left = rect.left - containerRect.left + ratio * rect.width;
+      const top = Math.max(0, rect.top - containerRect.top - 40);
+
+      img.style.position = "absolute";
+      img.style.display = "block";
+      img.style.zIndex = "10";
+      img.style.left = `${left}px`;
+      img.style.top = `${top}px`;
+      img.style.width = "53px";
+      img.style.height = "auto";
+      img.style.pointerEvents = "none";
+      img.style.transform = "translateX(-50%)";
+      img.style.visibility = "visible";
+    };
+
+    const positionMonsterClamped = (
+      slider: HTMLInputElement,
+      img: HTMLImageElement
+    ) => {
+      const container =
+        (slider.closest(".jspsych-html-slider-response-container") as HTMLElement | null) ||
+        (slider.closest(".jspsych-content") as HTMLElement | null) ||
+        (slider.parentElement as HTMLElement | null);
+      if (!container) return;
+      if (img.parentElement !== container) {
+        container.prepend(img);
+      }
+      container.style.position = "relative";
+      container.style.paddingTop = "54px";
+      container.style.overflow = "visible";
+      const containerRect = container.getBoundingClientRect();
+      const rect = slider.getBoundingClientRect();
+      const min = Number(slider.min ?? "0");
+      const max = Number(slider.max ?? "100");
+      const val = Number(slider.value);
+      const ratio = max === min ? 0 : (val - min) / (max - min);
+      const trackLeft = rect.left - containerRect.left;
+      const trackRight = trackLeft + rect.width;
+      const rawLeft = trackLeft + ratio * rect.width;
+      const halfWidth = img.offsetWidth > 0 ? img.offsetWidth / 2 : 26.5;
+      const minLeft = trackLeft + halfWidth;
+      const maxLeft = trackRight - halfWidth;
+      const left = Math.min(Math.max(rawLeft, minLeft), maxLeft);
       const top = Math.max(0, rect.top - containerRect.top - 40);
 
       img.style.position = "absolute";
@@ -439,6 +505,7 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
       q4B: "/pck/Screenshot%202026-02-04%20105938.png",
       q4C: "/pck/Screenshot%202026-02-04%20110053.png",
       q4D: "/pck/Screenshot%202026-02-04%20110056.png",
+      q6: "/pck/Screenshot%202026-02-05%20114610.png",
       q7: "/pck/Screenshot%202026-02-04%20110634.png",
     };
 
@@ -497,7 +564,16 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
           text-align: center;
         }
         .pck-list { margin: 8px 0 12px 16px; color: #111; }
-        .pck-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+        .pck-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 12px;
+          align-items: start;
+        }
+        .pck-grid.q4-grid {
+          grid-template-columns: repeat(2, minmax(240px, 1fr));
+          justify-items: center;
+        }
         .pck-dnd { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
         .pck-card {
           display: flex;
@@ -525,11 +601,27 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
         .pck-move button:active { transform: translateY(1px); }
         .pck-image {
           width: 100%;
-          max-width: 240px;
           border: 2px solid #111;
           border-radius: 10px;
           display: block;
           margin-top: 6px;
+        }
+        .pck-image.pie { max-width: 160px; }
+        .pck-image.line { max-width: 520px; }
+        .pck-choice.q4 { align-items: flex-start; display: block; }
+        .pck-choice.q4 input { margin: 0; }
+        .pck-choice.q4 .pck-opt {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+        }
+        .pck-choice.q4 .pck-opt-head {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          min-height: 24px;
         }
         .pck-image-wide {
           width: 100%;
@@ -591,7 +683,7 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
               <input type="hidden" id="pck-q1-order" name="order" value="A,B,C,D" />
 
               <div style="margin-top: 14px;">
-                <div class="pck-explain">Explain: _____ (Open response box)</div>
+                <div class="pck-explain">Explain:</div>
                 <textarea class="pck-textarea" name="explain" aria-label="Explain" required></textarea>
               </div>
 
@@ -719,7 +811,7 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
               </div>
 
               <div style="margin-top: 14px;">
-                <div class="pck-explain">Explain: _____ (Open response box)</div>
+                <div class="pck-explain">Explain:</div>
                 <textarea class="pck-textarea" name="explain" aria-label="Explain" required></textarea>
               </div>
 
@@ -777,7 +869,7 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
               </div>
 
               <div style="margin-top: 14px;">
-                <div class="pck-explain">Explain: _____ (Open response box)</div>
+                <div class="pck-explain">Explain:</div>
                 <textarea class="pck-textarea" name="explain" aria-label="Explain" required></textarea>
               </div>
 
@@ -821,35 +913,48 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
               Which representation of 3/5 aligns with research on internal representations of magnitude?
             </div>
             <form id="pck-q4-form">
-              <div class="pck-grid">
-                <label class="pck-choice">
-                  <input type="radio" name="choice" value="A" required />
-                  <div>
-                    <div><strong>A)</strong></div>
-                    <img class="pck-image" src="${PCK_IMAGE_PATHS.q4A}" alt="Pie chart option A" />
+              <div class="pck-grid q4-grid">
+                <label class="pck-choice q4">
+                  <div class="pck-opt">
+                    <div class="pck-opt-head">
+                      <input type="radio" name="choice" value="A" required />
+                      <strong>A)</strong>
+                    </div>
+                    <img class="pck-image pie" src="${PCK_IMAGE_PATHS.q4A}" alt="Pie chart option A" />
                   </div>
                 </label>
-                <label class="pck-choice">
-                  <input type="radio" name="choice" value="B" required />
-                  <div>
-                    <div><strong>B)</strong></div>
-                    <img class="pck-image" src="${PCK_IMAGE_PATHS.q4B}" alt="Pie chart option B" />
+                <label class="pck-choice q4">
+                  <div class="pck-opt">
+                    <div class="pck-opt-head">
+                      <input type="radio" name="choice" value="B" required />
+                      <strong>B)</strong>
+                    </div>
+                    <img class="pck-image pie" src="${PCK_IMAGE_PATHS.q4B}" alt="Pie chart option B" />
                   </div>
                 </label>
-                <label class="pck-choice">
-                  <input type="radio" name="choice" value="C" required />
-                  <div>
-                    <div><strong>C)</strong></div>
-                    <img class="pck-image" src="${PCK_IMAGE_PATHS.q4C}" alt="Number line 0-2 option" />
+                <label class="pck-choice q4">
+                  <div class="pck-opt">
+                    <div class="pck-opt-head">
+                      <input type="radio" name="choice" value="C" required />
+                      <strong>C)</strong>
+                    </div>
+                    <img class="pck-image line" src="${PCK_IMAGE_PATHS.q4C}" alt="Number line 0-2 option" />
                   </div>
                 </label>
-                <label class="pck-choice">
-                  <input type="radio" name="choice" value="D" required />
-                  <div>
-                    <div><strong>D)</strong></div>
-                    <img class="pck-image" src="${PCK_IMAGE_PATHS.q4D}" alt="Number line 0-1 option" />
+                <label class="pck-choice q4">
+                  <div class="pck-opt">
+                    <div class="pck-opt-head">
+                      <input type="radio" name="choice" value="D" required />
+                      <strong>D)</strong>
+                    </div>
+                    <img class="pck-image line" src="${PCK_IMAGE_PATHS.q4D}" alt="Number line 0-1 option" />
                   </div>
                 </label>
+              </div>
+
+              <div style="margin-top: 14px;">
+                <div class="pck-explain">Explain:</div>
+                <textarea class="pck-textarea" name="explain" aria-label="Explain" required></textarea>
               </div>
 
               <div class="pck-actions">
@@ -873,6 +978,7 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
               phase,
               question_id: "q4",
               choice: String(fd.get("choice") ?? ""),
+              explain: String(fd.get("explain") ?? "").trim(),
             });
           });
         },
@@ -901,7 +1007,7 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
               </div>
 
               <div style="margin-top: 14px;">
-                <div class="pck-explain">Explain: _____ (Open response box)</div>
+                <div class="pck-explain">Explain:</div>
                 <textarea class="pck-textarea" name="explain" aria-label="Explain" required></textarea>
               </div>
 
@@ -955,9 +1061,7 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
               6) Mr. Jones the 6th grade teacher said, "We need to find a common denominator. What do we multiply by?"
               Students respond, "Two." This is what the teacher writes on the board. Would you change anything about this exchange?
             </div>
-            <div class="pck-equation">
-              ${renderValueHTML("1/2")} &times; 2 = ${renderValueHTML("2/4")}
-            </div>
+            <img class="pck-image-wide" src="${PCK_IMAGE_PATHS.q6}" alt="Board example for common denominator" />
             <form id="pck-q6-form">
               <div class="pck-choices">
                 <label class="pck-choice"><input type="radio" name="choice" value="Yes" required /> <span><strong>A)</strong> Yes</span></label>
@@ -965,7 +1069,7 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
               </div>
 
               <div style="margin-top: 14px;">
-                <div class="pck-explain">Explain: _____ (Open response box)</div>
+                <div class="pck-explain">Explain:</div>
                 <textarea class="pck-textarea" name="explain" aria-label="Explain" required></textarea>
               </div>
 
@@ -1016,7 +1120,7 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
               </div>
 
               <div style="margin-top: 14px;">
-                <div class="pck-explain">Explain: _____ (Open response box)</div>
+                <div class="pck-explain">Explain:</div>
                 <textarea class="pck-textarea" name="explain" aria-label="Explain" required></textarea>
               </div>
 
@@ -1104,11 +1208,16 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
         stimulus: `
           <div style="max-width: 920px; margin: 0 auto; padding: 30px; text-align:center;">
             <img id="monster-fraction" src="/monster.png" alt="Monster" />
+            <style>
+              .jspsych-slider-labels span { color: #111 !important; }
+              #jspsych-html-slider-response-next { display: none !important; }
+              #jspsych-html-slider-response-response { pointer-events: none; }
+            </style>
             <h2 style="font-size: 28px; font-weight: 900; color: #111; margin-bottom: 8px; font-family: 'Courier New', monospace;">
-              Show how far the monster went.
+              This is how far the Monster went. (to show 100%)
             </h2>
             <div style="font-size: 22px; font-weight: 800; color: #111; margin-bottom: 8px;">
-              <span id="live-value-fraction">50%</span>
+              <span id="live-value-fraction">100%</span>
             </div>
           </div>
         `,
@@ -1116,20 +1225,33 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
         min: 0,
         max: 100,
         step: 1,
-        start: 50,
+        slider_start: 100,
         require_movement: true,
         button_label: "Continue",
+        trial_duration: 4000,
+        response_ends_trial: false,
         on_load: () => {
           const root = jsPsych.getDisplayElement();
           const slider = root.querySelector("input[type='range']") as HTMLInputElement | null;
           const valueEl = root.querySelector("#live-value-fraction") as HTMLElement | null;
           const monsterEl = root.querySelector("#monster-fraction") as HTMLImageElement | null;
+          root.querySelectorAll(".jspsych-slider-labels span").forEach((el) => {
+            const node = el as HTMLElement;
+            node.style.color = "#111";
+            node.style.opacity = "1";
+            node.style.textShadow = "0 1px 0 rgba(255,255,255,0.6)";
+            node.style.fontWeight = "900";
+          });
+          root.querySelectorAll(".jspsych-html-slider-response-container, .jspsych-html-slider-response-stimulus")
+            .forEach((el) => {
+              (el as HTMLElement).style.color = "#111";
+            });
           if (slider && valueEl) {
             const update = () => {
               const v = Number(slider.value);
               valueEl.textContent = `${Math.round(v)}%`;
               if (monsterEl) {
-                positionMonster(slider, monsterEl);
+                positionMonsterClamped(slider, monsterEl);
                 if (monsterEl.naturalWidth > 0) {
                   monsterEl.style.visibility = "visible";
                 }
@@ -1138,6 +1260,8 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
             requestAnimationFrame(update);
             setTimeout(update, 0);
             slider.addEventListener("input", update);
+            slider.disabled = true;
+            slider.style.opacity = "1";
           }
           if (slider && monsterEl) {
             monsterEl.style.position = "absolute";
@@ -1149,7 +1273,7 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
               monsterEl.src = "/monster.png?v=1";
             }
             monsterEl.onload = () => {
-              positionMonster(slider, monsterEl);
+              positionMonsterClamped(slider, monsterEl);
               monsterEl.style.visibility = "visible";
             };
           }
@@ -1276,9 +1400,10 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
         type: HtmlButtonResponsePlugin,
         stimulus: `
           <div style="max-width: 920px; margin: 0 auto; padding: 30px; text-align:center;">
-            <p style="font-size: 20px; font-weight: 900; color: #111; margin-bottom: 10px;">
-              ${renderValueHTML("1/2")} = 0.5
-            </p>
+            <div style="display:inline-flex; align-items:center; gap:14px; font-weight:900; color:#111; margin-bottom:10px;">
+              <span style="font-size: 40px; line-height:1;">${renderValueHTML("1/2")}</span>
+              <span style="font-size: 34px; line-height:1;">= 0.5</span>
+            </div>
             <p style="font-size: 16px; color: #333;">Now, show it on the number line!</p>
           </div>
         `,
@@ -1290,6 +1415,9 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
         stimulus: `
           <div style="max-width: 920px; margin: 0 auto; padding: 30px; text-align:center;">
             <img id="monster-decimal" src="/monster.png" alt="Monster" />
+            <style>
+              .jspsych-slider-labels span { color: #111 !important; }
+            </style>
             <h2 style="font-size: 28px; font-weight: 900; color: #111; margin-bottom: 8px; font-family: 'Courier New', monospace;">
               Show how far the monster went.
             </h2>
@@ -1299,13 +1427,24 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
         min: 0,
         max: 100,
         step: 1,
-        start: 50,
+        slider_start: 0,
         require_movement: true,
         button_label: "Continue",
         on_load: () => {
           const root = jsPsych.getDisplayElement();
           const slider = root.querySelector("input[type='range']") as HTMLInputElement | null;
           const monsterEl = root.querySelector("#monster-decimal") as HTMLImageElement | null;
+          root.querySelectorAll(".jspsych-slider-labels span").forEach((el) => {
+            const node = el as HTMLElement;
+            node.style.color = "#111";
+            node.style.opacity = "1";
+            node.style.textShadow = "0 1px 0 rgba(255,255,255,0.6)";
+            node.style.fontWeight = "900";
+          });
+          root.querySelectorAll(".jspsych-html-slider-response-container, .jspsych-html-slider-response-stimulus")
+            .forEach((el) => {
+              (el as HTMLElement).style.color = "#111";
+            });
           if (slider && monsterEl) {
             const update = () => {
               positionMonster(slider, monsterEl);
@@ -1368,6 +1507,9 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
         stimulus: `
           <div style="max-width: 920px; margin: 0 auto; padding: 30px; text-align:center;">
             <img id="monster-relay" src="/monster.png" alt="Monster" />
+            <style>
+              .jspsych-slider-labels span { color: #111 !important; }
+            </style>
             <p style="font-size: 18px; color: #111; margin-bottom: 8px;">
               The relay partner went 0.25.
             </p>
@@ -1383,7 +1525,7 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
         min: 0,
         max: 100,
         step: 1,
-        start: 25,
+        slider_start: 0,
         require_movement: true,
         button_label: "Continue",
         on_load: () => {
@@ -1391,6 +1533,17 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
           const slider = root.querySelector("input[type='range']") as HTMLInputElement | null;
           const valueEl = root.querySelector("#live-value-relay") as HTMLElement | null;
           const monsterEl = root.querySelector("#monster-relay") as HTMLImageElement | null;
+          root.querySelectorAll(".jspsych-slider-labels span").forEach((el) => {
+            const node = el as HTMLElement;
+            node.style.color = "#111";
+            node.style.opacity = "1";
+            node.style.textShadow = "0 1px 0 rgba(255,255,255,0.6)";
+            node.style.fontWeight = "900";
+          });
+          root.querySelectorAll(".jspsych-html-slider-response-container, .jspsych-html-slider-response-stimulus")
+            .forEach((el) => {
+              (el as HTMLElement).style.color = "#111";
+            });
           if (slider && valueEl) {
             const update = () => {
               const v = Number(slider.value);
@@ -1432,14 +1585,19 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
         stimulus: `
           <div style="max-width: 920px; margin: 0 auto; padding: 30px; text-align:center;">
             <img id="monster-team" src="/monster.png" alt="Monster" />
+            <style>
+              .jspsych-slider-labels span { color: #111 !important; }
+            </style>
             <p style="font-size: 18px; color: #111; margin-bottom: 8px;">
               Now, put each distance together.
             </p>
             <p style="font-size: 16px; color: #333; margin-bottom: 8px;">
               Show how far the monster TEAM went.
             </p>
-            <div style="font-size: 22px; font-weight: 800; color: #111; margin-bottom: 8px;">
-              ${renderValueHTML("1/2")} + 0.25 = <span id="live-value-team">0.75</span>
+            <div style="display:inline-flex; align-items:center; gap:10px; font-weight:900; color:#111; margin-bottom:8px;">
+              <span style="font-size: 34px; line-height:1;">${renderValueHTML("1/2")}</span>
+              <span style="font-size: 28px; line-height:1;">+ 0.25 =</span>
+              <span id="live-value-team" style="font-size: 28px; line-height:1;">0.75</span>
             </div>
           </div>
         `,
@@ -1447,7 +1605,7 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
         min: 0,
         max: 100,
         step: 1,
-        start: 75,
+        slider_start: 0,
         require_movement: true,
         button_label: "Continue",
         on_load: () => {
@@ -1455,6 +1613,17 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
           const slider = root.querySelector("input[type='range']") as HTMLInputElement | null;
           const valueEl = root.querySelector("#live-value-team") as HTMLElement | null;
           const monsterEl = root.querySelector("#monster-team") as HTMLImageElement | null;
+          root.querySelectorAll(".jspsych-slider-labels span").forEach((el) => {
+            const node = el as HTMLElement;
+            node.style.color = "#111";
+            node.style.opacity = "1";
+            node.style.textShadow = "0 1px 0 rgba(255,255,255,0.6)";
+            node.style.fontWeight = "900";
+          });
+          root.querySelectorAll(".jspsych-html-slider-response-container, .jspsych-html-slider-response-stimulus")
+            .forEach((el) => {
+              (el as HTMLElement).style.color = "#111";
+            });
           if (slider && valueEl) {
             const update = () => {
               const v = Number(slider.value);
@@ -1586,7 +1755,32 @@ const timeline: any[] = [
   {
     timeline: monsterMathTimeline,
     data: { phase: "monster" },
+    conditional_function: () => {
+      const resume = !!(window as any).__resumeFlow;
+      if (!resume) return true;
+      const stage = getSavedStage();
+      return stage === "PRE_DONE";
+    },
     on_timeline_finish: () => saveMonsterCheckpoint(),
+  },
+
+  {
+    type: HtmlButtonResponsePlugin,
+    stimulus: `
+      <div style="max-width: 920px; margin: 0 auto; padding: 30px; text-align:center;">
+        <img src="/pck/monster_stop.png" alt="Stop sign" style="width: min(320px, 80%); height: auto; margin: 10px auto 18px auto; display:block;" />
+        <p style="font-size: 20px; font-weight: 900; font-family: 'Courier New', monospace; color: #111; margin-bottom: 12px;">
+          Stop! You are now finished with the baseline assessment and number line game. You may take a quick break.
+          We will begin our face-to-face discussion momentarily.
+        </p>
+        <p style="font-size: 16px; font-family: 'Courier New', monospace; color: #333; margin-bottom: 16px;">
+          Press Continue when you have finished your discussion.
+        </p>
+      </div>
+    `,
+    choices: ["Continue"],
+    on_finish: () => saveStopCheckpoint(),
+    data: { task: "monster_stop" },
   },
  
   // POST (always runs)
