@@ -76,20 +76,114 @@ export function buildConsentAndIdTimeline(options: BuildOptions = {}) {
       `
 <div style="max-width: 860px; margin: 0 auto; padding: 30px;">
   <h1 style="font-size: 44px; font-weight: 900; color: #111; margin-bottom: 10px; font-family: 'Courier New', monospace;">
-    ${title}
+    INFORMED CONSENT
   </h1>
 
-  <p style="font-size: 18px; margin-bottom: 18px; color:#111;">
-    This activity is part of a research study about how people understand numbers.
-    It includes two short tasks (comparison and estimation). You can stop at any time.
-  </p>
-
   <div style="background: #fff; border: 3px solid #111; border-radius: 18px; padding: 18px; box-shadow: 6px 6px 0px rgba(0,0,0,0.18);">
-    <ul style="margin: 0; padding-left: 20px; font-size: 16px; line-height: 1.5; color:#111;">
-      <li>Your responses (accuracy and reaction time) will be recorded.</li>
-      <li>No names are required. You will enter a participant ID.</li>
-      <li>There are no known risks beyond everyday computer use.</li>
-    </ul>
+    <p style="margin: 0 0 8px 0; font-size: 16px; color:#111;">
+      <strong>Title of Project:</strong> Educator Cross-Notation Abilities
+    </p>
+    <p style="margin: 0 0 8px 0; font-size: 16px; color:#111;">
+      <strong>Researchers (PI and Co-PI):</strong> Lauren Schiller and Karen Woodruff
+    </p>
+    <p style="margin: 0 0 8px 0; font-size: 16px; color:#111;">
+      <strong>Department:</strong> Elementary and Physical Education, College of Education
+    </p>
+    <p style="margin: 0; font-size: 16px; color:#111;">
+      <strong>Contact Information:</strong> Dr. Schiller: (908) 737-3827, lschille@kean.edu; Dr. Woodruff:
+      (908) 737-3810, kwoodruf@kean.edu
+    </p>
+  </div>
+
+  <div style="margin-top: 18px; font-size: 16px; line-height: 1.6; color:#111;">
+    <h3 style="margin: 12px 0 6px; font-size: 18px; font-weight: 900;">I. Invitation to Participate</h3>
+    <p style="margin: 0 0 8px 0;">
+      You are being invited to participate in this research study called, "Educator Cross-Notation Abilities."
+      We are hoping to learn what preservice teachers know about fractions, decimals, and percentages and
+      whether such knowledge could be improved with a brief educational game.
+    </p>
+
+    <h3 style="margin: 12px 0 6px; font-size: 18px; font-weight: 900;">II. Purpose of Study</h3>
+    <p style="margin: 0 0 8px 0;">
+      The purpose of the study is to determine what preservice teachers know about fractions, decimals,
+      and percentages. We also would like to determine whether a brief math game could help improve
+      their knowledge.
+    </p>
+
+    <h3 style="margin: 12px 0 6px; font-size: 18px; font-weight: 900;">III. Participant Selection</h3>
+    <p style="margin: 0 0 8px 0;">
+      You are being invited to participate because you are considered a preservice teacher, someone who is
+      studying to become an elementary education teacher.
+    </p>
+
+    <h3 style="margin: 12px 0 6px; font-size: 18px; font-weight: 900;">IV. Procedures</h3>
+    <p style="margin: 0 0 8px 0;">
+      You will first take a brief test on the computer that should last about 15-20 minutes to measure your
+      level of knowledge about fractions, decimals, and percentages. Then, you will play a math game that
+      should last about 15-20 minutes. We are trying to determine whether this game is helpful. Finally,
+      you will take another test that will last about 15-20 minutes to measure if there are any changes in
+      your knowledge about fractions, decimals, and percentages. You might feel bored, uncomfortable, or
+      anxious answering math questions but these questions should be no different from other math
+      questions you have encountered before.
+    </p>
+
+    <h3 style="margin: 12px 0 6px; font-size: 18px; font-weight: 900;">V. Potential Risks</h3>
+    <p style="margin: 0 0 8px 0;">
+      A potential risk is that your identity could be revealed. However, the PI and Co-PI will work to
+      ensure that participants will remain anonymous and whether (or not) their students participate in the
+      study will remain private. The PI will keep all written materials locked in a desk drawer in a locked
+      office. Any electronic or digital information will be stored on a computer that is password protected.
+      There will be a written record matching your name with your study ID number, which will be kept in a
+      locked filing cabinet and destroyed prior to analyzing the data. All assessment data and participant
+      work will use de-identified study ID numbers and the master list identifying the subject will be kept
+      locked and separate from the list of study ID numbers.
+    </p>
+
+    <h3 style="margin: 12px 0 6px; font-size: 18px; font-weight: 900;">VI. Potential Benefits</h3>
+    <p style="margin: 0 0 8px 0;">There is no direct benefit.</p>
+
+    <h3 style="margin: 12px 0 6px; font-size: 18px; font-weight: 900;">VII. Financial Obligation</h3>
+    <p style="margin: 0 0 8px 0;">There are no costs for you to participate in this study.</p>
+
+    <h3 style="margin: 12px 0 6px; font-size: 18px; font-weight: 900;">VIII. Compensation/Treatment</h3>
+    <p style="margin: 0 0 8px 0;">There is no compensation.</p>
+
+    <h3 style="margin: 12px 0 6px; font-size: 18px; font-weight: 900;">IX. Confidentiality</h3>
+    <p style="margin: 0 0 8px 0;">
+      The results of this study will be published in journals and presented at academic conferences. Your
+      identity will be removed from any data you provide before publication or use for educational
+      purposes. Your name or any identifying information about you will not be published. De-identified
+      data may be used for future research studies, or distributed to another researcher for future research
+      without additional informed consent.
+    </p>
+
+    <h3 style="margin: 12px 0 6px; font-size: 18px; font-weight: 900;">X. Participation</h3>
+    <p style="margin: 0 0 8px 0;">
+      Participation in this research study is completely voluntary. If at any time you decide that you do not
+      want to participate in this study, your participation will be withdrawn without penalty. Your
+      participation (or not) in this study will not bear influence on your class standing or grade. Your
+      participation (or not) will be kept private from your class instructor.
+    </p>
+
+    <h3 style="margin: 12px 0 6px; font-size: 18px; font-weight: 900;">Questions/Comments</h3>
+    <p style="margin: 0 0 8px 0;">
+      If you have any questions, please contact the PI or Co-PI (Lauren Schiller and Karen Woodruff).
+      You can also contact the IRB if you have questions regarding your rights as research participants.
+    </p>
+    <p style="margin: 0 0 8px 0;">
+      <strong>Contact Information</strong><br/>
+      Primary Investigator: (908) 737-3827 or lschille@kean.edu<br/>
+      Co-Primary Investigator: (908) 737-3810 or kwoodruf@kean.edu<br/>
+      IRB: (908) 737-3461 or IRB@kean.edu
+    </p>
+
+    <h3 style="margin: 12px 0 6px; font-size: 18px; font-weight: 900;">Agreement to Participate</h3>
+    <p style="margin: 0;">
+      Clicking "I agree to participate in the research study" indicates that you have read and understood
+      the information provided in this document, and that you agree to participate in this study. If at any
+      time you have questions or concerns regarding this study, you should feel free to contact the primary
+      investigator at the telephone numbers or email addresses provided in this document.
+    </p>
   </div>
 
   <p style="margin-top: 18px; font-size: 16px; color:#111;">
