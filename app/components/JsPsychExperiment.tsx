@@ -1378,7 +1378,6 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
             <p style="font-size: 16px; color: #333; margin-bottom: 10px;">
               On the number line, 100% = 1.
             </p>
-            <p style="font-size: 16px; color: #333;">0 &nbsp; - &nbsp; 1</p>
           </div>
         `,
         choices: ["Continue"],
@@ -1588,16 +1587,44 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
             <style>
               .jspsych-slider-labels span { color: #111 !important; }
             </style>
+            <div style="max-width: 360px; margin: 0 auto 14px auto;">
+              <p style="font-size: 16px; color: #111; margin-bottom: 6px;">
+                Here the Monster went
+                <span style="display:inline-block; transform:scale(0.75); transform-origin:center center; line-height:1; vertical-align:middle; margin: 0 -6px;">
+                  ${renderValueHTML("1/2")}
+                </span>.
+              </p>
+              <div style="position: relative; width: 100%; height: 52px; margin-bottom: 2px;">
+                <div style="position: absolute; left: 0; right: 0; top: 26px; height: 2px; background: #9ca3af;"></div>
+                <img src="/monster.png" alt="Monster at one half" style="position: absolute; width: 42px; height: auto; left: 50%; top: 2px; transform: translateX(-50%);" />
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size: 15px; color:#111;">
+                <span>0</span><span>1</span>
+              </div>
+            </div>
+
+            <div style="max-width: 360px; margin: 0 auto 18px auto;">
+              <p style="font-size: 16px; color: #111; margin-bottom: 6px;">
+                Here the Monster went <strong>0.25</strong>.
+              </p>
+              <div style="position: relative; width: 100%; height: 52px; margin-bottom: 2px;">
+                <div style="position: absolute; left: 0; right: 0; top: 26px; height: 2px; background: #9ca3af;"></div>
+                <img src="/monster.png" alt="Monster at one quarter" style="position: absolute; width: 42px; height: auto; left: 25%; top: 2px; transform: translateX(-50%);" />
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size: 15px; color:#111;">
+                <span>0</span><span>1</span>
+              </div>
+            </div>
+
             <p style="font-size: 18px; color: #111; margin-bottom: 8px;">
               Now, put each distance together.
             </p>
             <p style="font-size: 16px; color: #333; margin-bottom: 8px;">
-              Show how far the monster TEAM went.
+              Show how far the monster went.
             </p>
             <div style="display:inline-flex; align-items:center; gap:10px; font-weight:900; color:#111; margin-bottom:8px;">
               <span style="font-size: 34px; line-height:1;">${renderValueHTML("1/2")}</span>
               <span style="font-size: 28px; line-height:1;">+ 0.25 =</span>
-              <span id="live-value-team" style="font-size: 28px; line-height:1;">0.75</span>
             </div>
           </div>
         `,
@@ -1611,7 +1638,6 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
         on_load: () => {
           const root = jsPsych.getDisplayElement();
           const slider = root.querySelector("input[type='range']") as HTMLInputElement | null;
-          const valueEl = root.querySelector("#live-value-team") as HTMLElement | null;
           const monsterEl = root.querySelector("#monster-team") as HTMLImageElement | null;
           root.querySelectorAll(".jspsych-slider-labels span").forEach((el) => {
             const node = el as HTMLElement;
@@ -1624,10 +1650,8 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
             .forEach((el) => {
               (el as HTMLElement).style.color = "#111";
             });
-          if (slider && valueEl) {
+          if (slider) {
             const update = () => {
-              const v = Number(slider.value);
-              valueEl.textContent = (v / 100).toFixed(2);
               if (monsterEl) {
                 positionMonster(slider, monsterEl);
                 if (monsterEl.naturalWidth > 0) {

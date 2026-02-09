@@ -127,7 +127,7 @@ export function buildNumberLineEstimationTimeline(options: BuildOptions) {
       labels: ["0", "1"],
       min: 0,
       max: 100,
-      start: 50,
+      slider_start: 0,
       require_movement: true,
       button_label: "SUBMIT",
       data: {
