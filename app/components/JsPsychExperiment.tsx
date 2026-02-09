@@ -11,6 +11,11 @@ import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
 import HtmlSliderResponsePlugin from "@jspsych/plugin-html-slider-response";
 import HtmlSurveyTextPlugin from "@jspsych/plugin-survey-text";
 import { getSession, upsertSession, clearSession } from "@/lib/sessionStore";
+import {
+  createSessionId,
+  flushPendingExperimentSaves,
+  saveJsPsychData,
+} from "@/lib/experimentDataSaver";
 import { renderValueHTML } from "@/app/components/renderValue";
 
 import { buildConsentAndIdTimeline } from "./tasks/consentAndIdTimeline";
@@ -26,10 +31,16 @@ type ExperimentProps = {
 const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
   const experimentDivId = "jspsych-target";
   const hasStarted = useRef(false);
+  const sessionIdRef = useRef(createSessionId());
+  const startedAtRef = useRef(new Date().toISOString());
 
   useEffect(() => {
     if (hasStarted.current) return;
     hasStarted.current = true;
+
+    void flushPendingExperimentSaves().catch((err) => {
+      console.warn("Could not flush queued experiment saves:", err);
+    });
 
     const jsPsych = initJsPsych({
       display_element: experimentDivId,
@@ -101,17 +112,45 @@ const JsPsychExperiment: React.FC<ExperimentProps> = ({ onFinish }) => {
         const finalPreCompare = resumeFlow && savedPre?.comparison ? savedPre.comparison : preCompare;
         const finalPreEst = resumeFlow && savedPre?.estimation ? savedPre.estimation : preEst;
 
+        const summary = {
+          consented,
+          participantId,
+          pre: { comparison: finalPreCompare, estimation: finalPreEst },
+          post: { comparison: postCompare, estimation: postEst },
+        };
+
+        const resolvedParticipantId = (
+          participantId ??
+          pid ??
+          "anonymous"
+        )
+          .toString()
+          .trim();
+        const endedAt = new Date().toISOString();
+
+        void saveJsPsychData({
+          participantId: resolvedParticipantId || "anonymous",
+          sessionId: sessionIdRef.current,
+          startedAt: startedAtRef.current,
+          endedAt,
+          summary,
+          rawRows: all.values(),
+        }).then((result) => {
+          if (result.ok) {
+            console.log(
+              `Data saved via ${result.provider}. Flushed queued uploads: ${result.flushed_before_save}.`
+            );
+            return;
+          }
+          console.warn(
+            `Data save failed (${result.provider}); queued for retry. Reason: ${result.error ?? "unknown"}`
+          );
+        });
 
         if (onFinish) {
           onFinish({
             raw: all,
-            summary: {
-              consented,
-              participantId,
-              pre: { comparison: finalPreCompare, estimation: finalPreEst },
-
-              post: { comparison: postCompare, estimation: postEst },
-            },
+            summary,
           });
         }
       },
